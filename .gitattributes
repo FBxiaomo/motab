@@ -1,0 +1,6 @@
+# Keep maintained text files consistent across Windows and other platforms.
+* text=auto eol=lf
+
+# Preserve the bytes of historical prebuilt resources with content hashes.
+assets/** -text
+install/_next/** -text

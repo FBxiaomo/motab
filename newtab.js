@@ -1,0 +1,1 @@
+import{d as s,s as o,R as e,j as a,M as t}from"./assets/requestIdleCallbackPolyfill-DrbyOYxo.js";import{S as r,a as l}from"./assets/sortable.esm-Bv0j-UjJ.js";import m from"./assets/myErrorPage-BgG-rSv-.js";s.locale("zh-cn"),o(!1),r.mount(new l),e.createRoot(document.body).render(a.jsx(t,{type:"ext"}));

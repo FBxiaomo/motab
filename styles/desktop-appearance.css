@@ -1,0 +1,32 @@
+/* 同一套外观应用于桌面、文件夹和 Dock；素材保持由 JS 加载和回退。 */
+.shortcuts-grid { grid-template-columns:repeat(auto-fill,minmax(var(--shortcut-size),1fr)); }
+.main-content { padding-bottom:112px; }
+.shortcuts-area { flex:1; min-height:0; overflow-y:auto; padding-top:8px; padding-bottom:20px; }
+#layout-menu { min-width:184px; }
+#layout-menu button { display:block; width:100%; text-align:left; }
+#folder-popup .folder-popup-item .shortcut-icon { width:var(--folder-icon-size,64px); height:var(--folder-icon-size,64px); }
+#folder-popup .folder-popup-item .shortcut-icon img:not(.custom-icon-image),
+#folder-popup .folder-popup-item .icon-letter { width:calc(var(--folder-icon-size,64px) * .625); height:calc(var(--folder-icon-size,64px) * .625); }
+.dock-inner .dock-item { width:var(--dock-icon-size,56px); height:var(--dock-icon-size,56px); }
+.dock-inner .dock-item img:not(.custom-icon-image), .dock-inner .dock-item .icon-letter { width:var(--dock-image-size,36px); height:var(--dock-image-size,36px); }
+html[data-show-names="false"] .shortcut-item > .shortcut-name,
+html[data-show-names="false"] .folder-popup-item > .shortcut-name { display:none; }
+.shortcut-icon img.custom-icon-image, .mini-icon img.custom-icon-image,
+.dock-item img.custom-icon-image, #folder-popup .shortcut-icon img.custom-icon-image { width:100%; height:100%; object-fit:cover; }
+html[data-icon-style="light"] :is(.shortcut-icon,.mini-icon,.dock-item) { background:rgba(255,255,255,.92); }
+html[data-icon-style="dark"] :is(.shortcut-icon,.mini-icon,.dock-item) { background:rgba(28,32,44,.94); box-shadow:0 3px 12px #0003; }
+html[data-icon-style="tinted"] :is(.shortcut-icon,.mini-icon,.dock-item) { background:var(--icon-tint); }
+html[data-icon-style="tinted"] :is(.shortcut-icon,.mini-icon,.dock-item) img { filter:grayscale(1); mix-blend-mode:multiply; opacity:.94; }
+html[data-icon-style="tinted"] :is(.shortcut-icon,.mini-icon,.dock-item) img:not(.icon-loaded) { opacity:0; }
+html[data-icon-style="tinted"] :is(.shortcut-icon,.mini-icon,.dock-item) .icon-letter { background:transparent !important; }
+.wallpaper { background-repeat:no-repeat; }
+@media (max-width:480px) {
+    .shortcuts-grid { column-gap:16px; }
+    .layout-toolbar { gap:8px; width:max-content; max-width:calc(100vw - 16px); font-size:12px; }
+    .layout-toolbar .btn { padding:8px 10px; }
+    #folder-popup .folder-popup-content { padding:16px 12px; max-width:96vw; }
+    #folder-popup .folder-popup-grid { gap:12px 4px; }
+    #folder-popup .folder-popup-item { min-width:0; padding:6px 0; }
+    #folder-popup .folder-popup-item .shortcut-icon { max-width:16vw; max-height:16vw; }
+    #folder-popup .shortcut-name { max-width:18vw; }
+}

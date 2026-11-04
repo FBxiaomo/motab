@@ -1,0 +1,1 @@
+const e=(e,n)=>{void 0!==(null==e?void 0:e.addEventListener)?e.addEventListener("change",n):void 0!==(null==e?void 0:e.addListener)&&e.addListener(n)},n=(e,n)=>{void 0!==(null==e?void 0:e.removeEventListener)?e.removeEventListener("change",n):void 0!==(null==e?void 0:e.removeListener)&&e.removeListener(n)};export{e as a,n as r};

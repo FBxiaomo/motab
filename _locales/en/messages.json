@@ -1,0 +1,98 @@
+{
+    "app_name": {
+        "message": "MoTab"
+    },
+    "app_description": {
+        "message": "A clean and beautiful local browser startpage"
+    },
+    "add_shortcut_desc": {
+        "message": "Add current website to shortcuts"
+    },
+    "lime_start_page": {
+        "message": "MoTab"
+    },
+    "lime_start_page_description": {
+        "message": "A clean and beautiful local startpage"
+    },
+    "lime_start_page_extension": {
+        "message": "MoTab Extension"
+    },
+    "welcome_text": {
+        "message": "Welcome to MoTab (〃'▽'〃)"
+    },
+    "qq_group": {
+        "message": "QQ Group"
+    },
+    "weibo": {
+        "message": "Weibo"
+    },
+    "quick_action": {
+        "message": "Quick Action"
+    },
+    "add_current_website_to_shortcuts": {
+        "message": "Add Current Website to Shortcuts"
+    },
+    "adding_this_page_to_shortcuts_is_not_supported": {
+        "message": "Adding this type of page to Shortcuts is not supported."
+    },
+    "auto_focus_on_search_bar": {
+        "message": "Auto Focus on Search Bar"
+    },
+    "auto_focus_on_search_bar_description": {
+        "message": "When enabled, the address bar will show MoTab URL."
+    },
+    "beautify_baidu_search_results_page": {
+        "message": "Beautify Baidu Search Results"
+    },
+    "beautify_baidu_search_results_page_description": {
+        "message": "This feature has been removed."
+    },
+    "cache_has_been_fixed": {
+        "message": "Cache has been fixed."
+    },
+    "change_log": {
+        "message": "Change Log"
+    },
+    "close": {
+        "message": "Close"
+    },
+    "extension_information": {
+        "message": "Extension Information"
+    },
+    "open_startpage": {
+        "message": "Open Start Page"
+    },
+    "clear_local_data": {
+        "message": "Clear Local Data"
+    },
+    "extension_settings": {
+        "message": "Extension Settings"
+    },
+    "fix_cache": {
+        "message": "Fix Cache"
+    },
+    "fix_cache_confirm": {
+        "message": "Fix cache?"
+    },
+    "fix_cache_description": {
+        "message": "Clear local cache if page loads abnormally."
+    },
+    "more_settings": {
+        "message": "More Settings"
+    },
+    "more_settings_description": {
+        "message": "Open MoTab settings panel"
+    },
+    "official_website": {
+        "message": "Website"
+    },
+    "rate_us": {
+        "message": "Rate Us"
+    },
+    "retinbox": {
+        "message": "Retinbox"
+    },
+    "version": {
+        "message": "Version"
+    }
+}

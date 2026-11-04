@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>末页 MoTab</title>
+<link rel="stylesheet" href="styles/appearance.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --theme-color: #B19CD9;
+    --theme-color-dark: #9a82c4;
+    --theme-color-light: #c9b8e0;
+    --mist-gray: #D3D3D3;
+    --pure-white-background-color: rgba(255,255,255,0.75);
+    --black-alpha-5: rgba(0,0,0,0.05);
+    --black-alpha-30: rgba(0,0,0,0.3);
+    --black-alpha-60: rgba(0,0,0,0.6);
+    --black-alpha-80: rgba(0,0,0,0.8);
+    --white-alpha-80: rgba(255,255,255,0.8);
+    --white-alpha-90: rgba(255,255,255,0.9);
+    --blur-strong: blur(20px);
+    --blur-medium: blur(12px);
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --shortcut-size: 96px;
+    --shortcut-icon-size: 60px;
+    --dock-height: 70px;
+    --transition-fast: 0.2s;
+    --transition-normal: 0.25s;
+    --transition-slow: 0.4s;
+    --icon-radius: 22%;
+    --icon-corner-shape: round;
+}
+/* 图标圆角个性化：4 档（1 微圆四边形 → 4 圆形），由设置面板写入 html[data-icon-shape] */
+/* 统一使用 round（标准圆弧）+ 半径线性递增，保证各档视觉圆度均匀递进；第 4 档 50% 为正圆 */
+:root[data-icon-shape="1"] { --icon-radius: 12%; }
+:root[data-icon-shape="2"] { --icon-radius: 22%; }
+:root[data-icon-shape="3"] { --icon-radius: 36%; }
+:root[data-icon-shape="4"] { --icon-radius: 50%; }
+html, body { width:100%; height:100%; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; user-select:none; }
+body { position:relative; }
+.wallpaper { position:fixed; top:0; left:0; width:100%; height:100%; background-size:cover; background-position:center; transition:background-image 0.5s ease; z-index:-2; }
+.wallpaper-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.08); z-index:-1; }
+.top-right { position:fixed; top:20px; right:24px; display:flex; align-items:center; gap:4px; z-index:100; }
+.icon-btn { width:40px; height:40px; border-radius:50%; border:none; background:rgba(255,255,255,0.2); backdrop-filter:var(--blur-medium); -webkit-backdrop-filter:var(--blur-medium); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all var(--transition-normal); }
+.icon-btn:hover { background:rgba(255,255,255,0.35); transform:scale(1.05); }
+.icon-btn:active { transform:scale(0.95); }
+.dropdown-menu { position:absolute; top:56px; right:0; width:180px; background:var(--white-alpha-90); backdrop-filter:var(--blur-strong); -webkit-backdrop-filter:var(--blur-strong); border-radius:12px; padding:8px; box-shadow:0 8px 32px rgba(0,0,0,0.15); opacity:0; visibility:hidden; transform:translateY(-8px) scale(0.96); transform-origin:top right; transition:all var(--transition-fast); }
+.dropdown-menu.show { opacity:1; visibility:visible; transform:translateY(0) scale(1); }
+.menu-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:8px; cursor:pointer; font-size:14px; color:var(--black-alpha-80); transition:background var(--transition-fast); }
+.menu-item:hover { background:var(--black-alpha-5); }
+.menu-item svg { color:var(--black-alpha-60); }
+.menu-divider { height:1px; background:var(--black-alpha-5); margin:6px 4px; }
+.main-content { position:relative; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; padding-top:10vh; z-index:1; }
+.clock { text-align:center; color:white; margin-bottom:30px; transition:all var(--transition-slow); }
+.time { font-size:100px; font-weight:300; letter-spacing:-2px; line-height:1; text-shadow:0 2px 20px rgba(0,0,0,0.15); cursor:pointer; transition:transform var(--transition-fast); }
+.time:hover { transform:scale(1.02); }
+.date { font-size:18px; font-weight:400; margin-top:8px; opacity:0.9; text-shadow:0 1px 10px rgba(0,0,0,0.1); }
+.search-container { margin-bottom:50px; width:100%; display:flex; justify-content:center; }
+.search-box { display:flex; align-items:center; width:280px; height:48px; background:rgba(255,255,255,0.28); backdrop-filter:var(--blur-strong); -webkit-backdrop-filter:var(--blur-strong); border-radius:24px; padding:0 8px 0 20px; transition:all var(--transition-normal); box-shadow:0 4px 20px rgba(0,0,0,0.1); }
+.search-box:hover { background:rgba(255,255,255,0.38); width:320px; }
+.search-box.focused { background:var(--white-alpha-90); width:480px; }
+.search-box.focused input { color:var(--black-alpha-80); }
+.search-box.focused .search-btn { color:var(--theme-color); }
+#search-input { flex:1; background:transparent; border:none; outline:none; font-size:16px; color:var(--black-alpha-80); text-align:center; font-weight:500; }
+#search-input::placeholder { color:var(--black-alpha-30); }
+.search-box.focused #search-input::placeholder { color:var(--black-alpha-30); }
+.search-btn { width:36px; height:36px; border-radius:50%; border:none; background:transparent; color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all var(--transition-fast); }
+.search-btn:hover { transform:scale(1.1); }
+.shortcuts-area { width:100%; max-width:900px; padding:0 20px; }
+.shortcuts-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:24px; justify-items:center; position:relative; }
+.shortcut-item { display:flex; flex-direction:column; align-items:center; cursor:pointer; position:relative; text-decoration:none; color:inherit; transition:transform 0.2s ease; }
+.shortcut-item.dragging { opacity:0.3; }
+.drag-ghost { position:fixed; z-index:9999; pointer-events:none; display:flex; flex-direction:column; align-items:center; background:rgba(255,255,255,0.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:20px; box-shadow:0 8px 32px rgba(0,0,0,0.25); padding:8px; transition:none; }
+.drag-ghost .shortcut-icon { width:72px; height:72px; }
+.drag-ghost .shortcut-name { font-size:12px; }
+.drag-ghost img { opacity:1 !important; }
+.drag-ghost.dock-ghost { align-items:center; justify-content:center; padding:4px; border-radius:14px; }
+.dock-ghost img { width:32px; height:32px; object-fit:contain; border-radius:6px; }
+.dock-ghost .icon-letter { width:32px; height:32px; border-radius:8px; font-size:18px; }
+.shortcut-icon { width:var(--shortcut-size); height:var(--shortcut-size); border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); background:rgba(255,255,255,0.35); backdrop-filter:var(--blur-medium); -webkit-backdrop-filter:var(--blur-medium); display:flex; align-items:center; justify-content:center; font-size:36px; margin-bottom:8px; box-shadow:0 4px 16px rgba(0,0,0,0.1); position:relative; overflow:hidden; transition:transform var(--transition-normal), box-shadow var(--transition-normal); }
+.shortcut-icon img { width:var(--shortcut-icon-size); height:var(--shortcut-icon-size); object-fit:contain; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); }
+.shortcut-item:hover .shortcut-icon { transform:translateY(-4px); box-shadow:0 10px 26px rgba(0,0,0,0.18); }
+.shortcut-item:active .shortcut-icon { transform:translateY(-1px) scale(0.96); }
+.shortcut-item.drop-target .shortcut-icon { transform:scale(1.12); box-shadow:0 0 0 3px var(--theme-color), 0 10px 26px rgba(0,0,0,0.25); }
+.shortcut-name { font-size:13px; color:white; text-shadow:0 1px 6px rgba(0,0,0,0.3); max-width:var(--shortcut-size); text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.shortcut-icon.folder { display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:3px; padding:9px; }
+.folder .mini-icon { width:100%; height:100%; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); background:rgba(255,255,255,0.5); display:flex; align-items:center; justify-content:center; font-size:16px; overflow:hidden; transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.mini-icon img { width:100%; height:100%; object-fit:contain; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); }
+.shortcut-item:hover .folder .mini-icon { transform:scale(1.1); }
+.shortcut-item:hover .folder .mini-icon:nth-child(2) { transition-delay:40ms; }
+.shortcut-item:hover .folder .mini-icon:nth-child(3) { transition-delay:80ms; }
+.shortcut-item:hover .folder .mini-icon:nth-child(4) { transition-delay:120ms; }
+.icon-letter { display:flex; align-items:center; justify-content:center; width:var(--shortcut-icon-size); height:var(--shortcut-icon-size); border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); color:white; font-weight:600; font-size:26px; }
+.mini-icon .icon-letter { width:100%; height:100%; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); font-size:14px; }
+.dock-item .icon-letter { width:32px; height:32px; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); font-size:18px; }
+.shortcut-icon img, .mini-icon img, .dock-item img { opacity:0; transition:opacity 0.35s ease; }
+.shortcut-icon img.icon-loaded, .mini-icon img.icon-loaded, .dock-item img.icon-loaded { opacity:1; }
+.add-shortcut { width:var(--shortcut-size); height:var(--shortcut-size); border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); border:2px dashed rgba(255,255,255,0.4); background:rgba(255,255,255,0.15); backdrop-filter:var(--blur-medium); -webkit-backdrop-filter:var(--blur-medium); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all var(--transition-normal); opacity:0; pointer-events:none; transform:scale(0.9); }
+.shortcuts-area:hover .add-shortcut { opacity:1; pointer-events:auto; transform:scale(1); }
+.add-shortcut:hover { border-color:rgba(255,255,255,0.7); background:rgba(255,255,255,0.25); }
+/* ===== Dock 栏：macOS/iOS 风格 — 悬停磁吸放大、毛玻璃、弹性动画 ===== */
+.dock { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); z-index:50; }
+.dock-inner { display:flex; align-items:flex-end; gap:8px; padding:8px 12px; background:rgba(255,255,255,0.25); backdrop-filter:blur(20px) saturate(180%); -webkit-backdrop-filter:blur(20px) saturate(180%); border-radius:22px; box-shadow:0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.3); border:1px solid rgba(255,255,255,0.2); }
+.dock-item { width:56px; height:56px; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); background:rgba(255,255,255,0.4); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.2s cubic-bezier(0.32, 0.72, 0, 1);font-size:24px; position:relative; text-decoration:none; color:inherit; transform-origin:bottom center; }
+/* 磁吸放大由 JS 以行内 transform 驱动（纯视觉不改布局/边距，杜绝水平居中的 Dock 整体漂移）；:hover 不再定义 transform */
+.dock-item.dragging { opacity:0.4; transform:scale(0.9); }
+.dock-item.drop-target { box-shadow:0 0 0 3px var(--theme-color), 0 4px 16px rgba(0,0,0,0.2); }
+.dock-item img { width:36px; height:36px; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); object-fit:contain; pointer-events:none; }
+/* 底部指示点（表示固定项） */
+.dock-item::after { content:''; position:absolute; bottom:-6px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:rgba(0,0,0,0.4); opacity:0; transition:opacity 0.2s ease; }
+.dock-item.pinned::after { opacity:1; }
+/* 工具提示 */
+.dock-item .dock-tooltip { position:absolute; bottom:calc(100% + 12px); left:50%; transform:translateX(-50%) scale(0.9); background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); color:white; padding:6px 12px; border-radius:8px; font-size:12px; white-space:nowrap; opacity:0; visibility:hidden; transition:all 0.2s cubic-bezier(0.32, 0.72, 0, 1); pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+.dock-item:hover .dock-tooltip { opacity:1; visibility:visible; transform:translateX(-50%) scale(1); }
+.context-menu { position:fixed; background:var(--white-alpha-90); backdrop-filter:var(--blur-strong); -webkit-backdrop-filter:var(--blur-strong); border-radius:10px; padding:6px; box-shadow:0 8px 32px rgba(0,0,0,0.15); z-index:1000; opacity:0; visibility:hidden; transform:scale(0.95); transform-origin:top left; transition:opacity var(--transition-fast), transform var(--transition-fast), visibility var(--transition-fast); min-width:160px; pointer-events:none; }
+.context-menu.show { opacity:1; visibility:visible; transform:scale(1); pointer-events:auto; }
+.context-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:13px; color:var(--black-alpha-80); transition:background var(--transition-fast); }
+.context-item:hover { background:var(--black-alpha-5); }
+.context-item.danger { color:#ff3b30; }
+.undo-toast { position:fixed; bottom:105px; left:50%; transform:translateX(-50%); z-index:1001; display:flex; align-items:center; gap:16px; padding:10px 16px; border-radius:12px; background:var(--black-alpha-80); color:white; font-size:13px; box-shadow:0 6px 20px rgba(0,0,0,0.2); }
+.undo-toast[hidden] { display:none; }
+.undo-toast button { border:0; background:none; color:#d6c6fa; font:inherit; font-weight:600; cursor:pointer; }
+.context-item svg { color:var(--black-alpha-60); }
+.modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:250; opacity:0; visibility:hidden; transition:all var(--transition-fast); }
+.modal.show { opacity:1; visibility:visible; }
+.modal-content { background:white; border-radius:16px; padding:24px; width:400px; max-width:90%; transform:scale(0.9); transition:transform var(--transition-fast); }
+.modal.show .modal-content { transform:scale(1); }
+.modal-content h3 { margin-bottom:20px; color:var(--black-alpha-80); font-size:18px; font-weight:600; }
+.form-group { margin-bottom:16px; }
+.form-group label { display:block; margin-bottom:6px; font-size:13px; color:var(--black-alpha-60); }
+.form-group input, .form-group select { width:100%; padding:10px 14px; border:1px solid var(--black-alpha-5); border-radius:10px; font-size:14px; outline:none; transition:border-color var(--transition-fast); background:white; }
+.form-group input:focus, .form-group select:focus { border-color:var(--theme-color); }
+.checkbox-label { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--black-alpha-80); cursor:pointer; margin-bottom:0; }
+.checkbox-label input { width:auto; accent-color:var(--theme-color); }
+.modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+.btn { padding:8px 20px; border-radius:10px; border:none; font-size:14px; cursor:pointer; transition:all var(--transition-fast); }
+.btn-primary { background:var(--theme-color); color:white; }
+.btn-primary:hover { opacity:0.9; transform:translateY(-1px); }
+.btn-secondary { background:var(--black-alpha-5); color:var(--black-alpha-60); }
+.btn-secondary:hover { background:rgba(0,0,0,0.1); }
+.settings-panel { position:fixed; top:0; right:0; width:420px; height:100%; background:var(--white-alpha-90); backdrop-filter:var(--blur-strong); -webkit-backdrop-filter:var(--blur-strong); box-shadow:-8px 0 32px rgba(0,0,0,0.1); z-index:150; transform:translateX(100%); transition:transform var(--transition-normal); display:flex; flex-direction:column; }
+.settings-panel.show { transform:translateX(0); }
+.settings-header { display:flex; align-items:center; justify-content:space-between; padding:20px 24px; border-bottom:1px solid var(--black-alpha-5); }
+.settings-header h3 { font-size:18px; color:var(--black-alpha-80); font-weight:600; }
+.close-btn { width:32px; height:32px; border-radius:8px; border:none; background:transparent; color:var(--black-alpha-60); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all var(--transition-fast); }
+.close-btn:hover { background:var(--black-alpha-5); }
+.settings-body { flex:1; overflow-y:auto; padding:20px 24px; }
+.settings-section { margin-bottom:24px; }
+.settings-section h4 { font-size:13px; color:var(--black-alpha-60); margin-bottom:12px; font-weight:500; }
+.shape-group { display:flex; gap:8px; width:100%; }
+.shape-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:7px; padding:10px 4px 8px; border-radius:10px; cursor:pointer; border:2px solid transparent; transition:background var(--transition-fast), border-color var(--transition-fast); }
+.shape-item:hover { background:var(--black-alpha-5); }
+.shape-item.active { border-color:var(--theme-color); background:var(--black-alpha-5); }
+.shape-swatch { width:34px; height:34px; background:var(--theme-color); box-shadow:0 2px 8px rgba(0,0,0,0.15); }
+.shape-name { font-size:12px; color:var(--black-alpha-60); }
+.shape-item.active .shape-name { color:var(--theme-color); font-weight:600; }
+.data-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.data-actions .btn { padding:9px 14px; }
+.data-actions .btn:disabled { opacity:0.45; cursor:default; transform:none; }
+.data-status { margin-top:12px; font-size:13px; line-height:1.6; color:var(--black-alpha-60); white-space:pre-line; }
+.data-status.error { color:#c73430; }
+.setting-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--black-alpha-5); }
+.setting-row:last-child { border-bottom:none; }
+.setting-label { font-size:14px; color:var(--black-alpha-80); }
+.setting-desc { font-size:12px; color:var(--black-alpha-60); margin-top:2px; }
+.toggle { width:44px; height:26px; background:var(--black-alpha-5); border-radius:13px; position:relative; cursor:pointer; transition:background var(--transition-fast); }
+.toggle.active { background:var(--theme-color); }
+.toggle::after { content:''; position:absolute; top:3px; left:3px; width:20px; height:20px; background:white; border-radius:50%; transition:left var(--transition-fast); box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+.toggle.active::after { left:21px; }
+.select-group { display:flex; flex-wrap:wrap; gap:8px; }
+.select-item { padding:8px 16px; border-radius:10px; border:1px solid var(--black-alpha-5); background:white; font-size:13px; color:var(--black-alpha-60); cursor:pointer; transition:all var(--transition-fast); }
+.select-item:hover { border-color:var(--theme-color); color:var(--theme-color); }
+.select-item.active { background:var(--theme-color); border-color:var(--theme-color); color:white; }
+.wallpaper-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.wallpaper-preview { aspect-ratio:16/10; border-radius:10px; background-size:cover; background-position:center; cursor:pointer; border:2px solid transparent; transition:all var(--transition-fast); overflow:hidden; }
+.wallpaper-preview:hover { transform:scale(1.02); }
+.wallpaper-preview.active { border-color:var(--theme-color); }
+.wallpaper-preview.live { position:relative; }
+.wallpaper-preview.live::after { content:'动态'; position:absolute; bottom:6px; right:6px; background:var(--theme-color); color:white; padding:2px 6px; border-radius:4px; font-size:10px; }
+.settings-body::-webkit-scrollbar { width:6px; }
+.settings-body::-webkit-scrollbar-track { background:transparent; }
+.settings-body::-webkit-scrollbar-thumb { background:var(--black-alpha-30); border-radius:3px; }
+
+/* ===== 文件夹弹层：iOS 风格 — 从图标位置放大展开、毛玻璃背景、弹性动画 ===== */
+.folder-popup { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; z-index:200; visibility:hidden; pointer-events:none; }
+.folder-popup.show { visibility:visible; pointer-events:auto; }
+.folder-popup.closing .folder-popup-content { pointer-events:none; }
+/* 背景：模糊的桌面效果（而非纯黑遮罩） */
+.folder-popup-backdrop { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.2); backdrop-filter:blur(16px) saturate(150%); -webkit-backdrop-filter:blur(16px) saturate(150%); }
+/* 文件夹容器：从图标位置展开的毛玻璃面板 */
+.folder-popup-content { position:relative; background:rgba(255,255,255,0.85); border-radius:24px; padding:20px; width:420px; max-width:90vw; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5); transform-origin:center center; }
+/* 面板的展开/收起动画由 startpage.js 用 Web Animations API 接管，CSS 不定义过渡态 */
+/* 标题区 */
+.folder-popup-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding:0 4px; }
+.folder-popup-header h3 { font-size:20px; color:var(--black-alpha-80); font-weight:600; letter-spacing:-0.3px; }
+.folder-popup-subtitle { font-size:13px; color:var(--black-alpha-60); margin-top:2px; }
+/* 网格：iOS 风格 4 列布局 */
+.folder-popup-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px 12px; min-height:160px; align-content:start; }
+/* 单个项目：弹性入场动画 */
+@keyframes folderItemIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+.folder-popup-item { display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:8px 4px; border-radius:16px; text-decoration:none; color:inherit; transition:background 0.2s ease, transform 0.2s cubic-bezier(0.32, 0.72, 0, 1); animation:folderItemIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) backwards; animation-delay:calc(var(--i, 0) * 12ms); }
+.folder-popup-item:hover { background:rgba(0,0,0,0.05); transform:scale(1.05); }
+.folder-popup-item:active { transform:scale(0.95); }
+/* 弹层内图标 */
+.folder-popup-item .shortcut-icon { width:64px; height:64px; margin-bottom:8px; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); background:rgba(255,255,255,0.6); backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:0 2px 8px rgba(0,0,0,0.1); transition:transform 0.2s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.2s ease; }
+.folder-popup-item:hover .shortcut-icon { transform:scale(1.08); box-shadow:0 4px 16px rgba(0,0,0,0.15); }
+.folder-popup-item .shortcut-icon img { width:40px; height:40px; object-fit:contain; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); transition:none; }
+.folder-popup-item .icon-letter { width:40px; height:40px; border-radius:var(--icon-radius); corner-shape:var(--icon-corner-shape); font-size:22px; }
+.folder-popup-item .shortcut-name { font-size:12px; max-width:80px; color:var(--black-alpha-80); text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* 拖拽排序时禁用动画 */
+#folder-popup-grid.reordering .folder-popup-item { animation:none; }
+.folder-popup-item.dragging { opacity:0.4; transform:scale(0.9); }
+/* 分页导航：iOS 风格圆点 */
+.folder-popup-nav { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:20px; }
+.folder-popup-dots { display:flex; gap:6px; }
+.folder-popup-dot { width:7px; height:7px; border-radius:50%; background:rgba(0,0,0,0.2); transition:background-color 0.25s, transform 0.25s, width 0.25s, border-radius 0.25s; cursor:pointer; }
+.folder-popup-dot:hover { transform:scale(1.2); background:rgba(0,0,0,0.3); }
+.folder-popup-dot.active { background:var(--theme-color); transform:scale(1.15); width:20px; border-radius:4px; }
+/* 关闭按钮 */
+.folder-popup-close { width:30px; height:30px; border-radius:50%; border:none; background:rgba(0,0,0,0.1); color:var(--black-alpha-60); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background-color 0.2s ease, transform 0.2s ease; font-size:18px; line-height:1; }
+.folder-popup-close:hover { background:rgba(0,0,0,0.15); transform:scale(1.1); }
+@media (prefers-reduced-motion: reduce) {
+    .folder-popup-item { animation:none; transition:none; }
+    .folder-popup-item .shortcut-icon, .folder-popup-dot, .folder-popup-close { transition:none; }
+}
+</style>
+<style>
+.layout-toolbar { position:fixed; top:18px; left:50%; transform:translateX(-50%); z-index:1100; display:flex; align-items:center; gap:16px; padding:10px 16px; border-radius:18px; background:rgba(255,255,255,.95); box-shadow:0 8px 32px #0002; font-size:14px; }
+.layout-toolbar[hidden], #layout-menu[hidden] { display:none; }
+#layout-menu { position:fixed; z-index:1200; padding:6px; border-radius:12px; background:#fff; box-shadow:0 8px 32px #0003; }
+#layout-menu button { border:0; background:transparent; padding:12px 18px; cursor:pointer; border-radius:8px; font:inherit; }
+#layout-menu button:hover { background:#eee; }
+body.layout-editing .shortcut-item, body.layout-editing .folder-popup-item, body.layout-editing .dock-item { cursor:grab; }
+body.layout-editing .shortcut-icon, body.layout-editing .dock-item { outline:1px dashed rgba(255,255,255,.8); }
+body.layout-editing .shortcut-icon { animation:layoutWiggle .32s ease-in-out infinite alternate; }
+body.layout-editing .dragging .shortcut-icon { animation:none; }
+body.layout-editing .add-shortcut { opacity:1; pointer-events:auto; transform:none; }
+@keyframes layoutWiggle { from { rotate:-.7deg; } to { rotate:.7deg; } }
+@media (prefers-reduced-motion:reduce) { body.layout-editing .shortcut-icon { animation:none; } }
+</style>
+<link rel="stylesheet" href="styles/desktop-appearance.css">
+</head>
+<body>
+<div class="layout-toolbar" id="layout-toolbar" hidden role="region" aria-label="自定义布局">
+    <span>自定义布局</span><button class="btn btn-secondary" id="layout-undo" disabled>撤销拖动</button><button class="btn btn-primary" id="layout-done">完成</button>
+</div>
+<div id="layout-menu" hidden><button id="layout-start">开始自定义布局</button><button id="layout-icons">图标外观</button><button id="layout-wallpaper">更换壁纸</button></div>
+<div id="wallpaper" class="wallpaper"></div>
+<div class="wallpaper-overlay"></div>
+
+<div class="top-right">
+    <button class="icon-btn" id="settings-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+    <div class="dropdown-menu" id="settings-menu">
+        <div class="menu-item" data-action="general">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>常规设置</span>
+        </div>
+        <div class="menu-item" data-action="search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>搜索引擎</span>
+        </div>
+        <div class="menu-item" data-action="wallpaper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>壁纸偏好</span>
+        </div>
+        <div class="menu-item" data-action="data">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v3h16v-3"/></svg>
+            <span>数据管理</span>
+        </div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" data-action="about">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <span>关于</span>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="clock">
+        <div class="time" id="time">00:00</div>
+        <div class="date" id="date"></div>
+    </div>
+    <div class="search-container">
+        <div class="search-box" id="search-box">
+            <input type="text" id="search-input" placeholder="搜索一下..." autocomplete="off">
+            <button class="search-btn" id="search-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+        </div>
+    </div>
+    <div class="shortcuts-area">
+        <div class="shortcuts-grid" id="shortcuts-grid">
+            <div class="add-shortcut" id="add-shortcut">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dock">
+    <div class="dock-inner" id="dock-inner"></div>
+</div>
+
+<div class="context-menu" id="context-menu">
+    <div class="context-item" data-action="customize-icon"><span>更换图标</span></div>
+    <div class="context-item" data-action="edit">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <span>编辑</span>
+    </div>
+    <div class="context-item" data-action="to-grid">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>移出到网格</span>
+    </div>
+    <div class="context-item" data-action="to-dock">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+        <span>添加到底栏</span>
+    </div>
+    <div class="context-item" data-action="move-to-folder">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="16" rx="2"/><path d="M2 9h20M2 5l4-3h5l3 3"/></svg>
+        <span>移动到文件夹</span>
+    </div>
+    <div class="context-item" data-action="open-all">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h14v16H5zM9 8h6M9 12h6"/></svg>
+        <span>全部打开</span>
+    </div>
+    <div class="context-item danger" data-action="delete">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <span>删除</span>
+    </div>
+</div>
+
+<div class="undo-toast" id="undo-toast" hidden><span id="undo-message">已删除</span><button id="undo-delete">撤销</button></div>
+
+<div class="modal" id="add-modal">
+    <div class="modal-content">
+        <h3>添加快捷方式</h3>
+        <div class="form-group"><label>名称</label><input type="text" id="add-name" placeholder="输入名称（留空自动识别）"></div>
+        <div class="form-group" id="add-url-group"><label>网址</label><input type="url" id="add-url" placeholder="https://"></div>
+        <div class="form-group">
+            <label class="checkbox-label"><input type="checkbox" id="add-is-folder"> 创建为文件夹（建好后把快捷方式拖进去）</label>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" id="add-cancel">取消</button>
+            <button class="btn btn-primary" id="add-confirm">确定</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="edit-modal">
+    <div class="modal-content">
+        <h3 id="edit-modal-title">编辑快捷方式</h3>
+        <div class="form-group"><label>名称</label><input type="text" id="edit-name"></div>
+        <div class="form-group" id="edit-url-group"><label>网址</label><input type="url" id="edit-url"></div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" id="edit-cancel">取消</button>
+            <button class="btn btn-primary" id="edit-confirm">确定</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="move-modal">
+    <div class="modal-content">
+        <h3>移动快捷方式</h3>
+        <div class="form-group"><label for="move-target">目标位置</label><select id="move-target"></select></div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" id="move-cancel">取消</button>
+            <button class="btn btn-primary" id="move-confirm">移动</button>
+        </div>
+    </div>
+</div>
+
+<div class="settings-panel" id="settings-panel">
+    <div class="settings-header">
+        <h3 id="settings-title">设置</h3>
+        <button class="close-btn" id="close-settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div class="settings-body" id="settings-body"></div>
+</div>
+
+<div class="folder-popup" id="folder-popup">
+    <div class="folder-popup-backdrop"></div>
+    <div class="folder-popup-content">
+        <div class="folder-popup-header">
+            <div>
+                <h3 id="folder-popup-title">文件夹</h3>
+                <div class="folder-popup-subtitle" id="folder-popup-count"></div>
+            </div>
+            <button class="folder-popup-close" id="folder-popup-close">×</button>
+        </div>
+        <div class="folder-popup-grid" id="folder-popup-grid"></div>
+        <div class="folder-popup-nav" id="folder-popup-nav">
+            <div class="folder-popup-dots" id="folder-popup-dots"></div>
+        </div>
+    </div>
+</div>
+
+<script src="scripts/data-backup.js"></script>
+<script src="scripts/media-store.js"></script>
+<script src="scripts/appearance.js"></script>
+<script src="scripts/startpage.js"></script>
+</body>
+</html>

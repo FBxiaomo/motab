@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <title>末页 MoTab</title>
+    <link rel="stylesheet" href="styles/popup-ext.css" />
+</head>
+<body>
+    <div class="popup-container">
+        <header>
+            <h1 data-i18n="lime_start_page_extension">末页 MoTab</h1>
+            <span class="version" id="version-text">v</span>
+        </header>
+        
+        <div class="menu-section">
+            <h2 data-i18n="quick_action">快捷操作</h2>
+            <button class="menu-btn" id="add-shortcut-btn">
+                <span data-i18n="add_current_website_to_shortcuts">添加当前网站到捷径</span>
+                <svg viewBox="0 0 24 24" width="16"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <div class="add-panel" id="add-panel" hidden>
+                <label for="shortcut-name">名称</label>
+                <input id="shortcut-name" type="text" maxlength="100" autocomplete="off">
+                <label for="shortcut-url">网址</label>
+                <input id="shortcut-url" type="url" autocomplete="off">
+                <label for="shortcut-target">添加到</label>
+                <select id="shortcut-target"><option value="">快捷方式网格</option></select>
+                <div class="add-actions">
+                    <button class="action-btn primary" id="save-shortcut-btn">添加</button>
+                    <button class="action-btn" id="cancel-shortcut-btn">取消</button>
+                </div>
+                <p class="form-status" id="shortcut-status" role="status" aria-live="polite"></p>
+            </div>
+        </div>
+
+        <div class="menu-section">
+            <h2 data-i18n="extension_information">扩展信息</h2>
+            <button class="menu-btn" id="open-startpage-btn">
+                <span data-i18n="open_startpage">打开起始页</span>
+                <svg viewBox="0 0 24 24" width="16"><path fill="currentColor" d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+            </button>
+            <button class="menu-btn" id="clear-data-btn">
+                <span data-i18n="clear_local_data">清除本地数据</span>
+                <svg viewBox="0 0 24 24" width="16"><path fill="currentColor" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            </button>
+        </div>
+
+        <footer>
+            <span>&copy; 2024 MoTab</span>
+        </footer>
+    </div>
+    <script src="scripts/data-backup.js"></script>
+    <script src="scripts/media-store.js"></script>
+    <script src="scripts/popup-ext.js"></script>
+</body>
+</html>
